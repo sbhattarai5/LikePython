@@ -1,0 +1,55 @@
+(* File: lexer.mml *)
+{
+#use "token.ml";;
+}
+
+let comment = "(*" _ * "*)"
+let plus = "+"
+let minus = "-"
+let times = "*"
+let div = "/"
+let digit = ['0'-'9']
+let nzdigit = ['1'-'9']
+let digits = digit +
+let nonneginteger = (nzdigit digit *) | "0"
+let integer = (minus?) nonneginteger
+let float = (integer "." digits) | (integer "e" integer) 
+let boolean = "true" | "false"
+let lower = ['a'-'z']
+let upper = ['A'-'Z']
+let letter = upper | lower
+let letters = letter +
+let identifier = letters (letters | digit | "_") *
+let isequ = "=="
+let isneq = "!="
+let equ = "="
+let iftok = "if"
+let elsetok = "else"
+let lparen = "("
+let rparen = ")"
+
+rule lexer = parse
+     comment { lexer lexbuf }
+    | lparen { Lparen_tok :: lexer lexbuf }
+    | rparen { Rparen_tok :: lexer lexbuf }
+    | boolean as b { Bool_tok (bool_of_string b)
+                     :: lexer lexbuf }
+    | iftok { If_tok :: lexer lexbuf }
+    | elsetok { Else_tok :: lexer lexbuf }
+    | identifier as id { Id_tok id :: lexer lexbuf }
+    | float as f { Float_tok (float_of_string f) :: lexer lexbuf }
+    | integer as i { Int_tok (int_of_string i)
+                     :: lexer lexbuf }
+    | plus { Plus_tok :: lexer lexbuf }
+    | minus { Minus_tok :: lexer lexbuf }
+    | times { Times_tok :: lexer lexbuf }
+    | div { Div_tok :: lexer lexbuf }
+    | equ { Equ_tok :: lexer lexbuf }
+    | isequ { Is_Equ_tok :: lexer lexbuf }
+    | isneq { Is_Neq_tok :: lexer lexbuf }
+    | eof { [] }
+    | _ { lexer lexbuf }
+  
+{
+   let tokenize s = lexer (Lexing.from_string s);;
+}
